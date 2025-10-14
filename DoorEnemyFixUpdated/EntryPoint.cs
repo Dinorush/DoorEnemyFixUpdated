@@ -5,7 +5,7 @@ using HarmonyLib;
 namespace DoorEnemyFixUpdated
 {
     // Using DoorEnemyFix GUID to override it
-    [BepInPlugin("Localia." + MODNAME, MODNAME, "1.1.0")]
+    [BepInPlugin("Localia." + MODNAME, MODNAME, "1.1.1")]
     internal sealed class EntryPoint : BasePlugin
     {
         public const string MODNAME = "DoorEnemyFix";

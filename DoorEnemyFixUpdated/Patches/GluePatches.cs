@@ -10,8 +10,13 @@ namespace DoorEnemyFixUpdated.Patches
         [HarmonyPostfix]
         private static void Post_LandStatic(GlueGunProjectile __instance, bool enableCollider)
         {
+            // Only runs if landed on door
             if (!enableCollider)
-                __instance.m_collider.enabled = false;
+            {
+                // Still want glue to collide with other glue, so set these to prevent touching enemy
+                __instance.m_landedOnEnemy = true;
+                __instance.m_onEnemyVolumeScale = 1f;
+            }
         }
 
         [HarmonyPatch(typeof(GlueGunProjectile), nameof(GlueGunProjectile.SetLandedOnEnemy))]
@@ -32,7 +37,18 @@ namespace DoorEnemyFixUpdated.Patches
 
             var agent = collider.GetComponent<IDamageable>().GetBaseAgent();
             if (!DoorUtil.CanTouchNode(__instance.m_projTargetPos, agent.CourseNode))
-                __result = false;
+            {
+                // Scan again without enemies
+                int mask = __instance.CollisionMask & ~LayerManager.MASK_ENEMY_DAMAGABLE;
+                Vector3 move = __instance.m_projVelocity * Time.fixedDeltaTime;
+                __result = Physics.SphereCast(__instance.m_projTargetPos, __instance.m_sphereCastRadius, move, out var hitInfo, 1f, mask);
+                if (__result)
+                {
+                    __instance.m_projLastRayHitPoint = hitInfo.point;
+                    __instance.m_projLastRayHitNormal = hitInfo.normal;
+                    __instance.m_projLastRayHitCollider = hitInfo.collider;
+                }
+            }
         }
     }
 }
